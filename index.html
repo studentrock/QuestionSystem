@@ -1,72 +1,114 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <title>線上對答案系統</title>
+  <meta charset="UTF-8">
+  <title>線上答題卡</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .question { margin-bottom: 20px; }
-    .correct { color: green; }
-    .wrong { color: red; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    table {
+      margin: auto;
+      border-collapse: collapse;
+    }
+    td, th {
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+    }
+    .question-num {
+      font-weight: bold;
+      background-color: #f0f0f0;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    h3 {
+      margin-top: 40px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
-  <h1>線上對答案系統</h1>
 
-  <div id="questionArea"></div>
+  <h2>線上答題卡（共 50 題）</h2>
 
-  <button onclick="grade()">送出作答</button>
+  <h3>設定正確答案</h3>
+  <form id="answerKeyForm">
+    <table>
+      <tr><th>題號</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+      <tbody id="answerKeyTable"></tbody>
+    </table>
+  </form>
+
+  <h3>學生作答區</h3>
+  <label>每題幾分：</label>
+  <input type="number" id="pointsPerQ" value="1" min="1"><br><br>
+
+  <form id="quizForm">
+    <table>
+      <tr><th>題號</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+      <tbody id="questionsTable"></tbody>
+    </table>
+    <br>
+    <button type="button" onclick="grade()">對答案</button>
+  </form>
+
   <div id="result"></div>
 
   <script>
-    // 題目設定：你可以自己加題目、改正確答案或配分
-    const questions = [
-      { 
-        text: "1 + 1 等於多少？", 
-        answer: "2", 
-        score: 5 
-      },
-      { 
-        text: "首都台北是哪一國的首都？", 
-        answer: "台灣", 
-        score: 10 
-      }
-    ];
+    const totalQuestions = 50;
 
-    // 顯示題目
-    const questionArea = document.getElementById('questionArea');
-    questions.forEach((q, index) => {
-      const div = document.createElement('div');
-      div.className = 'question';
-      div.innerHTML = `
-        <label>${q.text} (${q.score} 分)</label><br />
-        <input type="text" id="q${index}" />
-      `;
-      questionArea.appendChild(div);
-    });
+    const ansKeyTable = document.getElementById("answerKeyTable");
+    const quizTable = document.getElementById("questionsTable");
 
-    // 對答案
+    for (let i = 1; i <= totalQuestions; i++) {
+      const ansRow = document.createElement("tr");
+      const quizRow = document.createElement("tr");
+
+      ansRow.innerHTML = `<td class="question-num">${i}</td>` +
+        ['A','B','C','D','E'].map(opt =>
+          `<td><input type="radio" name="a${i}" value="${opt}"></td>`
+        ).join('');
+
+      quizRow.innerHTML = `<td class="question-num">${i}</td>` +
+        ['A','B','C','D','E'].map(opt =>
+          `<td><input type="radio" name="q${i}" value="${opt}"></td>`
+        ).join('');
+
+      ansKeyTable.appendChild(ansRow);
+      quizTable.appendChild(quizRow);
+    }
+
     function grade() {
-      let totalScore = 0;
-      let output = "";
+      const pointsPerQ = parseInt(document.getElementById("pointsPerQ").value);
+      let correct = 0;
 
-      questions.forEach((q, index) => {
-        const userAnswer = document.getElementById(`q${index}`).value.trim();
-        const isCorrect = userAnswer === q.answer;
-        if (isCorrect) {
-          totalScore += q.score;
+      for (let i = 1; i <= totalQuestions; i++) {
+        const correctOptions = document.getElementsByName("a" + i);
+        const userOptions = document.getElementsByName("q" + i);
+        let correctAns = "";
+        let userAns = "";
+
+        for (let opt of correctOptions) {
+          if (opt.checked) correctAns = opt.value;
+        }
+        for (let opt of userOptions) {
+          if (opt.checked) userAns = opt.value;
         }
 
-        output += `<p>${q.text}<br />
-          你的答案：${userAnswer} - 
-          <span class="${isCorrect ? 'correct' : 'wrong'}">
-            ${isCorrect ? '正確' : '錯誤'}（正確答案：${q.answer}）
-          </span></p>`;
-      });
+        if (correctAns && userAns && correctAns === userAns) {
+          correct++;
+        }
+      }
 
-      output += `<h3>總得分：${totalScore} 分</h3>`;
-      document.getElementById('result').innerHTML = output;
+      const score = correct * pointsPerQ;
+      document.getElementById("result").textContent = `你對了 ${correct} 題，總分：${score}`;
     }
   </script>
+
 </body>
 </html>
