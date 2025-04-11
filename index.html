@@ -1,131 +1,327 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>線上答題卡</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      text-align: center;
-    }
-    table {
-      margin: auto;
-      border-collapse: collapse;
-    }
-    td, th {
-      border: 1px solid #ccc;
-      padding: 5px 10px;
-    }
-    .question-num {
-      font-weight: bold;
-      background-color: #f0f0f0;
-    }
-    #result {
-      margin-top: 20px;
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-    h3 {
-      margin-top: 40px;
-      color: #333;
-    }
-    #answerKeySection {
-      display: none;
-      margin-bottom: 30px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>線上答題卡</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            text-align: center;
+            background-color: #f7fafc;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 {
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            font-size: 2xl;
+            font-semibold;
+        }
+        table {
+            margin: auto;
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 600px;
+        }
+        td, th {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        th {
+            background-color: #edf2f7;
+            color: #4a5568;
+            font-weight: 600;
+        }
+        .question-num {
+            font-weight: bold;
+            background-color: #f0f0f0;
+            color: #2d3748;
+        }
+        #result {
+            margin-top: 2rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1a202c;
+        }
+        h3 {
+            margin-top: 2.5rem;
+            color: #2d3748;
+            font-size: 1.5rem;
+            font-semibold;
+        }
+        #quizForm table {
+            max-width: 100%;
+        }
+        #quizForm td, #quizForm th {
+            padding: 0.375rem;
+        }
+        .option-radio {
+            margin: 0.25rem;
+        }
+        button {
+            padding: 0.75rem 1.5rem;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            margin-top: 1rem;
+        }
+        button:hover {
+            background-color: #45a049;
+            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+        }
+        #pointsPerQ {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            margin: 0 0.5rem;
+            width: 4rem;
+            text-align: center;
+        }
+
+        #settingsSection {
+            display: none;  /* 預設隱藏 */
+            position: fixed; /* 使用固定定位，使其浮在畫面上 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* 置中 */
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* 更強的陰影 */
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+            z-index: 10; /* 確保它在其他元素之上 */
+            width: 90%; /* 寬度 */
+            max-height: 90%; /* 最大高度 */
+            overflow-y: auto; /* 超出時顯示滾動條 */
+            text-align: left;
+        }
+
+        #settingsSection h3{
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        #settingsForm {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        #settingsForm label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.875rem;
+            display: block; /* 確保 label 佔據整行 */
+        }
+
+        #settingsForm input,
+        #settingsForm textarea {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            width: calc(100% - 2rem); /* 寬度減去 padding */
+            max-width: 400px; /* 限制最大寬度 */
+        }
+
+        #settingsForm textarea {
+            height: 4rem;
+            resize: none;
+        }
+
+        #settingsForm button {
+            margin-top: 0;
+            align-self: center;
+            width: auto;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5); /* 半透明黑色 */
+            z-index: 9; /* 確保它在設定畫面之下 */
+        }
+
+        .show-settings {
+            display: block;
+        }
+
+    </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans">
+    <div class="container">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6">線上答題卡（共 50 題）</h2>
 
-  <h2>線上答題卡（共 50 題）</h2>
+        <button id="showSettingsButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">設定考試</button>
 
-  <button onclick="toggleAnswerKey()">🔒 老師模式</button>
+        <div class="overlay"></div>
 
-  <div id="answerKeySection">
-    <h3>設定正確答案</h3>
-    <form id="answerKeyForm">
-      <table>
-        <tr><th>題號</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
-        <tbody id="answerKeyTable"></tbody>
-      </table>
-    </form>
-  </div>
+        <div id="settingsSection">
+            <h3>考試設定</h3>
+            <form id="settingsForm">
+                <label for="examName">考試名稱：</label>
+                <input type="text" id="examName" name="examName" required>
 
-  <h3>學生作答區</h3>
-  <label>每題幾分：</label>
-  <input type="number" id="pointsPerQ" value="1" min="1"><br><br>
+                <label for="examDate">考試日期：</label>
+                <input type="date" id="examDate" name="examDate" required>
 
-  <form id="quizForm">
-    <table>
-      <tr><th>題號</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
-      <tbody id="questionsTable"></tbody>
-    </table>
-    <br>
-    <button type="button" onclick="grade()">對答案</button>
-  </form>
+                <label for="studentName">學生姓名：</label>
+                <input type="text" id="studentName" name="studentName" required>
 
-  <div id="result"></div>
+                <label for="className">班級：</label>
+                <input type="text" id="className" name="className" required>
 
-  <script>
-    const totalQuestions = 50;
+                <label for="examInfo">考試說明：</label>
+                <textarea id="examInfo" name="examInfo"></textarea>
 
-    const ansKeyTable = document.getElementById("answerKeyTable");
-    const quizTable = document.getElementById("questionsTable");
+                <label for="pointsPerQ">每題分數：</label>
+                <input type="number" id="pointsPerQ" name="pointsPerQ" value="1" min="1" required>
 
-    for (let i = 1; i <= totalQuestions; i++) {
-      const ansRow = document.createElement("tr");
-      const quizRow = document.createElement("tr");
+                <label for="teacherPassword">老師密碼：</label>
+                <input type="password" id="teacherPassword" name="teacherPassword" required>
 
-      ansRow.innerHTML = `<td class="question-num">${i}</td>` +
-        ['A','B','C','D','E'].map(opt =>
-          `<td><input type="radio" name="a${i}" value="${opt}"></td>`
-        ).join('');
+                <button type="submit">儲存設定</button>
+                <button type="button" id="closeSettingsButton" class="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">關閉</button>
+            </form>
+        </div>
 
-      quizRow.innerHTML = `<td class="question-num">${i}</td>` +
-        ['A','B','C','D','E'].map(opt =>
-          `<td><input type="radio" name="q${i}" value="${opt}"></td>`
-        ).join('');
+        <h3>學生作答區</h3>
+        <form id="quizForm">
+            <table>
+                <tr><th>題號</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+                <tbody id="questionsTable"></tbody>
+            </table>
+            <br>
+            <button type="button" onclick="grade()">對答案</button>
+        </form>
 
-      ansKeyTable.appendChild(ansRow);
-      quizTable.appendChild(quizRow);
-    }
+        <div id="result" class="mt-6 p-4 bg-white rounded-lg shadow-md"></div>
+    </div>
 
-    function grade() {
-      const pointsPerQ = parseInt(document.getElementById("pointsPerQ").value);
-      let correct = 0;
+    <script>
+        const totalQuestions = 50;
+        const quizTable = document.getElementById("questionsTable");
+        const settingsForm = document.getElementById("settingsForm");
+        const settingsSection = document.getElementById("settingsSection");
+        const showSettingsButton = document.getElementById("showSettingsButton");
+        const closeSettingsButton = document.getElementById("closeSettingsButton");
+        const overlay = document.querySelector('.overlay');
 
-      for (let i = 1; i <= totalQuestions; i++) {
-        const correctOptions = document.getElementsByName("a" + i);
-        const userOptions = document.getElementsByName("q" + i);
-        let correctAns = "";
-        let userAns = "";
 
-        for (let opt of correctOptions) {
-          if (opt.checked) correctAns = opt.value;
-        }
-        for (let opt of userOptions) {
-          if (opt.checked) userAns = opt.value;
+        let examSettings = {};  // 用於儲存考試設定
+
+        // 載入設定
+        if (localStorage.getItem('examSettings')) {
+            examSettings = JSON.parse(localStorage.getItem('examSettings'));
         }
 
-        if (correctAns && userAns && correctAns === userAns) {
-          correct++;
+        // 將設定顯示在表單上
+        if (examSettings) {
+            document.getElementById('examName').value = examSettings.examName || '';
+            document.getElementById('examDate').value = examSettings.examDate || '';
+            document.getElementById('studentName').value = examSettings.studentName || '';
+            document.getElementById('className').value = examSettings.className || '';
+            document.getElementById('examInfo').value = examSettings.examInfo || '';
+            document.getElementById('pointsPerQ').value = examSettings.pointsPerQ || 1;
+            document.getElementById('teacherPassword').value = examSettings.teacherPassword || '';
         }
-      }
 
-      const score = correct * pointsPerQ;
-      document.getElementById("result").textContent = `你對了 ${correct} 題，總分：${score}`;
-    }
+        for (let i = 1; i <= totalQuestions; i++) {
+            const quizRow = document.createElement("tr");
+            quizRow.innerHTML = `<td class="question-num">${i}</td>` +
+                ['A','B','C','D','E'].map(opt =>
+                    `<td><input class="option-radio" type="radio" name="q${i}" value="${opt}"></td>`
+                ).join('');
+            quizTable.appendChild(quizRow);
+        }
 
-    function toggleAnswerKey() {
-      const password = prompt("請輸入老師密碼：");
-      if (password === "1234") { // 你可以改掉這裡的密碼
-        document.getElementById("answerKeySection").style.display = "block";
-      } else {
-        alert("密碼錯誤");
-      }
-    }
-  </script>
+        showSettingsButton.addEventListener('click', () => {
+            settingsSection.classList.add('show-settings');
+            overlay.style.display = 'block';
+        });
 
+        closeSettingsButton.addEventListener('click', () => {
+            settingsSection.classList.remove('show-settings');
+            overlay.style.display = 'none';
+        });
+
+
+        settingsForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            examSettings = {
+                examName: document.getElementById('examName').value,
+                examDate: document.getElementById('examDate').value,
+                studentName: document.getElementById('studentName').value,
+                className: document.getElementById('className').value,
+                examInfo: document.getElementById('examInfo').value,
+                pointsPerQ: document.getElementById('pointsPerQ').value,
+                teacherPassword: document.getElementById('teacherPassword').value,
+            };
+
+            localStorage.setItem('examSettings', JSON.stringify(examSettings));
+            alert('設定已儲存！');
+            settingsSection.classList.remove('show-settings');
+            overlay.style.display = 'none';
+        });
+
+        function grade() {
+            const pointsPerQ = parseInt(document.getElementById("pointsPerQ").value);
+            let correct = 0;
+            const password = prompt("請輸入老師密碼：");
+
+            if (password !== examSettings.teacherPassword) {
+                alert("密碼錯誤，無法評分！");
+                return;
+            }
+
+            const correctAnswers = {};
+            for (let i = 1; i <= totalQuestions; i++) {
+                const answerInput = document.querySelector(`input[name="a${i}"]:checked`);
+                if (answerInput) {
+                    correctAnswers[i] = answerInput.value;
+                } else {
+                    alert(`請設定第 ${i} 題的正確答案！`);
+                    return;
+                }
+            }
+
+
+            for (let i = 1; i <= totalQuestions; i++) {
+                const userOptions = document.getElementsByName("q" + i);
+                let userAns = "";
+
+                for (let opt of userOptions) {
+                    if (opt.checked) userAns = opt.value;
+                }
+
+                if (correctAnswers[i] && userAns && correctAnswers[i] === userAns) {
+                    correct++;
+                }
+            }
+
+            const score = correct * pointsPerQ;
+            document.getElementById("result").textContent = `你對了 ${correct} 題，總分：${score}`;
+        }
+    </script>
 </body>
 </html>
